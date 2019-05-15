@@ -4,6 +4,8 @@ node_modules
 
 muestras/
 video/
+*.mp4
+*.avi
 
 # local env files
 .env.local

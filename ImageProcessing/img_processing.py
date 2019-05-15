@@ -1,10 +1,18 @@
 import cv2
 import numpy as np
 import os
+import glob
 
-def Read_Images(photos_path = '../muestras',video_path='../example.mp4'):
+fps = 30
+
+def Read_Images(photos_path = './muestras',video_path='./example.mp4'):
+    global fps
     # Playing video from file:
     cap = cv2.VideoCapture(video_path)
+    
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    
+    print(f'fps: {fps}')
 
     try:
         if not os.path.exists(photos_path):
@@ -34,7 +42,16 @@ def Read_Images(photos_path = '../muestras',video_path='../example.mp4'):
     cap.release()
     cv2.destroyAllWindows() 
 
-def Make_Video(images_cnt, photos_path = '../muestras', video_path = '../video/video.avi'):
+def Make_Video(photos_path = './muestras', video_path = './video/video.avi'):
+    try:
+        if not os.path.exists('./video'):
+            os.makedirs('./video')
+    except OSError:
+        print ('Error: Creating directory of data')
+    
+    images_cnt = len(glob.glob(photos_path + '/*.jpg'))
+    print(f'{images_cnt} imagenes')
+    
     img=[]
     for i in range(0,images_cnt):
         img.append(cv2.imread(photos_path + '/frame' + str(i) + '.jpg'))
@@ -43,9 +60,10 @@ def Make_Video(images_cnt, photos_path = '../muestras', video_path = '../video/v
 
     #cv2.VideoWriter_fourcc('M','J','P','G')
     #video=cv2.VideoWriter('./video.avi',-1,1,(width,height))
-    video=cv2.VideoWriter(video_name,cv2.VideoWriter_fourcc(*'DIVX'), 50, (width,height))
+    video=cv2.VideoWriter(video_path,cv2.VideoWriter_fourcc(*'DIVX'), fps, (width,height))
 
-
+    print('Enzamblando video')
+    
     for j in range(0,images_cnt):
         video.write(img[j])
 
