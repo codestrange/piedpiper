@@ -4,6 +4,9 @@ node_modules
 
 muestras/
 video/
+gray/
+procesadas/
+*.mp3
 *.mp4
 *.avi
 
