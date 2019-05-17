@@ -1,49 +1,92 @@
 from ImageProcessing import *
 from Fourier import *
-import os
-import pygame
+from Wavelets import *
 
 #modulo principal de la aplicación
 
-#lee el video y lo separa en frames, por defecto asume que el video esta en la misma carpeta que este py y tiene nombre example.py
-#los frames se locaclizan en la carpeta /muestras
-#Read_Images()
-
-
-#toma las imagenes de la carpeta muestra y las comprime
-#Make_Video()
-
-def Generate_FFT_Images(photos_path = './muestras', output_path = './procesadas'):
+def Generate_FFT_Images(qratio):
+    images = Get_Numpy_Array(gray_photos)
     
-    images = Get_Numpy_Array(photos_path)
-    
-    try:
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-    except OSError:
-        print ('Error: Creating directory of data')
+    mkdir(fft_photos_umbral)
+    mkdir(fft_photos_quantification)
     
     for i,image in enumerate(images):
-        comp = full_compress(image,qratio=5)
-        cv2.imwrite(output_path + '/frame' + str(i) + '.jpg', comp)
+        blocks = compress_image(image)
+        blocks_quantification2 = [[quntification(block, Q, qratio) for block in row] for row in blocks]
+        comp1 = decompress_image(blocks_quantification2)
+        std = np.std(image)
+        blocks_umbral = [[umbral(block, std) for block in row] for row in blocks]
+        comp = decompress_image(blocks_umbral)
+        cv2.imwrite(fft_photos_quantification + '/frame' + str(i) + '.jpg', comp1)
+        cv2.imwrite(fft_photos_umbral + '/frame' + str(i) + '.jpg', comp)
     
-    print('Done!!')
+    print('FFT Done!!')
+
+def Generate_FFT_Unmbral():
+    images = Get_Numpy_Array(gray_photos)
+    mkdir(fft_photos_umbral)
+    blocks = compress_image(image)
+    std = np.std(image)
+    blocks_umbral = [[umbral(block, std) for block in row] for row in blocks]
+    data = decompress_image(blocks_umbral)
+    cv2.imwrite(fft_photos_umbral + '/frame' + str(i) + '.jpg', data)
     
-#Generate_FFT_Images(photos_path = './gray')
-
-
-#Convert_To_Gray()
+def Generate_FFT_Qratio(qratio):
+    images = Get_Numpy_Array(gray_photos)
+    blocks = compress_image(image)
+    mkdir(fft_photos_quantification)
+    blocks_quantification = [[quntification(block, Q, qratio) for block in row] for row in blocks]
+    data = decompress_image(blocks_quantification)
     
-Make_Video(photos_path = './gray', video_path = './video/video3.avi')
+    cv2.imwrite(fft_photos_quantification + '/frame' + str(i) + '.jpg', data)
 
-#Read_Images(photos_path = './procesadas',video_path='./example.mp4')
+def Generate_Wavelet_Images(rows, columns):
+    Generate_Wavelet_Temp(rows,columns)
+    Generate_Wave_Esp()
+    
+    print('Wavelets Done!!')
+    
+def Generate_Wavelet_Temp(rows, columns):
+    images = Get_Numpy_Array(gray_photos)
+    
+    result = []
+    
+    mkdir(wave_photos_temp)
+    
+    for j in range(0,rows):
+        temp = []
+        for i in range(0,columns):
+            temp.append(images[j*columns + i])
+        reuslt = time_compression(temp,2000000)
+        for i in range(0,len(reuslt)):
+            result.append(full_compress_wavelets(reuslt[i]))
+    
+    for i,image in enumerate(result):
+        cv2.imwrite(wave_photos_temp + '/frame' + str(i) + '.jpg', image)        
+        
+def Generate_Wave_Esp():
+    images = Get_Numpy_Array(gray_photos)
+    
+    mkdir(wave_photos_esp)
+    
+    for i,image in enumerate(images):
+        comp = full_compress_wavelets(image)
+        cv2.imwrite(wave_photos_esp + '/frame' + str(i) + '.jpg', comp)
+    
+    print('Wavelets Done!!')
+
+Read_Images(color_photos, video_path)
+
+Convert_To_Gray(color_photos, gray_photos)
+
+Generate_FFT_Images(qratio)
+    
+Generate_Wavelet_Images(4,20)
 
 
-file1 = 'alarma.mp3'
-pygame.init()
-pygame.mixer.init()
-pygame.mixer.music.load(file1)
-pygame.mixer.music.play()
-
-while pygame.mixer.music.get_busy(): 
-    pygame.time.Clock().tick(10)
+Make_Video(color_photos, color_video, color_video_name)
+Make_Video(gray_photos, gray_video, gray_video_name)
+Make_Video(fft_photos_quantification, fft_video_quantification, fft_video_name)
+Make_Video(fft_photos_umbral, fft_video_umbral, fft_video_name)
+Make_Video(wave_photos_temp, wave_video_temp, wave_video_name)
+Make_Video(wave_photos_esp, wave_video_esp, wave_video_name)

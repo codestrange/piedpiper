@@ -1,1 +1,1 @@
-from . import wavelets
+from .wavelets import *

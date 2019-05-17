@@ -1,29 +1,24 @@
 import cv2
 import numpy as np
-import os
-import glob
+from .utils import mkdir,jpgcount
 
 fps = 30
-images_cnt = 80
 
-def Read_Images(photos_path = './muestras',video_path='./example.mp4'):
+def Read_Images(photos_path, video_path):
     global fps
-    # Playing video from file:
-    cap = cv2.VideoCapture(video_path)
     
+    #Reproducir video para realizar la captura por frames
+    cap = cv2.VideoCapture(video_path)
+    #optener los fps del video
     fps = cap.get(cv2.CAP_PROP_FPS)
     
     print(f'fps: {fps}')
-
-    try:
-        if not os.path.exists(photos_path):
-            os.makedirs(photos_path)
-    except OSError:
-        print ('Error: Creating directory of data')
-
+    
+    mkdir(photos_path)
+    
     currentFrame = 0
     while(True):
-        # Capture frame-by-frame
+        # Obtener 1 frame
         ret, frame = cap.read()
         
         try:
@@ -31,72 +26,66 @@ def Read_Images(photos_path = './muestras',video_path='./example.mp4'):
         except:
             break
 
-        # Saves image of the current frame in jpg file
+        # Salvar la catura
         name =  photos_path + '/frame' + str(currentFrame) + '.jpg'
         print ('Creating... ' + name)
         cv2.imwrite(name, frame)
 
-        # To stop duplicate images
+        # Indice de la imagen
         currentFrame += 1
 
-    # When everything done, release the capture
+    # Cerrar el video
     cap.release()
     cv2.destroyAllWindows() 
-
-def Make_Video(photos_path = './muestras', video_path = './video/video.avi'):
-    global images_cnt
     
-    try:
-        if not os.path.exists('./video'):
-            os.makedirs('./video')
-    except OSError:
-        print ('Error: Creating directory of data')
+def Make_Video(photos_path, video_path, video_name):
+    global fps
     
-    images_cnt = len(glob.glob(photos_path + '/*.jpg'))
+    mkdir(video_path)
+    
+    images_cnt = jpgcount(photos_path)
+    
     print(f'{images_cnt} imagenes')
     
     img=[]
+    #Cargar las imágenes
     for i in range(0,images_cnt):
         img.append(cv2.imread(photos_path + '/frame' + str(i) + '.jpg'))
 
     height,width,layers=img[1].shape
+    #Inicializar el video
+    video=cv2.VideoWriter(video_path + '/' + video_name + '.mp4',cv2.VideoWriter_fourcc(*'MP4V'), fps, (width,height))
 
-    #cv2.VideoWriter_fourcc('M','J','P','G')
-    #video=cv2.VideoWriter('./video.avi',-1,1,(width,height))
-    video=cv2.VideoWriter(video_path,cv2.VideoWriter_fourcc(*'DIVX'), fps, (width,height))
-
-    print('Enzamblando video')
-    
+    print('Codificando video')
+    #Insertar cada imagen
     for j in range(0,images_cnt):
         video.write(img[j])
-
+    
+    #Cerrar proceso
     cv2.destroyAllWindows()
     video.release() 
     
-def Get_Numpy_Array(photos_path = './muestras'):
+    print('Video Codificado')
+    
+def Get_Numpy_Array(photos_path):
     result = []
     
-    #Read_Images(photos_path)
+    images_cnt = jpgcount(photos_path)
     
     for i in range(0,images_cnt):
         img = cv2.imread(photos_path + '/frame' + str(i) + '.jpg', 0)
         result.append(img)
-        
+    print(result[-1])    
     return result
 
-def Convert_To_Gray(photos_path = './muestras', output_path = './gray'):
+def Convert_To_Gray(photos_path, output_path):
+    mkdir(output_path)
     
-    try:
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-    except OSError:
-        print ('Error: Creating directory of data')
-        
-    cant = len(glob.glob(photos_path + '/*.jpg'))
+    cant = jpgcount(photos_path)
     
     for i in range(0,cant):
         image = cv2.imread(photos_path + '/frame' + str(i) + '.jpg')
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        cv2.imwrite(output_path + '/frame' + str(i) + '.jpg',gray_image)
-    
+        resized = cv2.resize(gray_image,(1024,512))
+        cv2.imwrite(output_path + '/frame' + str(i) + '.jpg', resized)
     
