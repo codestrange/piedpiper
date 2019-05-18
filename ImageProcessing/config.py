@@ -30,5 +30,5 @@ wave_video_path = videos + '/wave'
 wave_photos_temp = wave_photos_path + '/temp'
 wave_photos_esp = wave_photos_path + '/esp'
 
-wave_video_temp = wave_photos_path + '/temp'
-wave_video_esp = wave_photos_path + '/esp'
+wave_video_temp = wave_video_path + '/temp'
+wave_video_esp = wave_video_path + '/esp'

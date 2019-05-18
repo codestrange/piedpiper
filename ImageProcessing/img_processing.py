@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
-from .utils import mkdir,jpgcount
+from .utils import mkdir,jpgcount, prt
+import shutil
+from .config import video_path as v_path
 
 fps = 30
 
@@ -27,8 +29,7 @@ def Read_Images(photos_path, video_path):
             break
 
         # Salvar la catura
-        name =  photos_path + '/frame' + str(currentFrame) + '.jpg'
-        print ('Creating... ' + name)
+        name = prt(photos_path, currentFrame)
         cv2.imwrite(name, frame)
 
         # Indice de la imagen
@@ -40,6 +41,10 @@ def Read_Images(photos_path, video_path):
     
 def Make_Video(photos_path, video_path, video_name):
     global fps
+    
+    cap = cv2.VideoCapture(v_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()
     
     mkdir(video_path)
     
@@ -75,7 +80,7 @@ def Get_Numpy_Array(photos_path):
     for i in range(0,images_cnt):
         img = cv2.imread(photos_path + '/frame' + str(i) + '.jpg', 0)
         result.append(img)
-    print(result[-1])    
+    #print(result[-1])    
     return result
 
 def Convert_To_Gray(photos_path, output_path):
