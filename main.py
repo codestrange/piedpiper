@@ -118,14 +118,14 @@ def Generate_Wave_Esp():
 #------------------------------------------------Ejemplo1------------------------------------------------
 #Read_Images(color_photos, video_path)
 #Convert_To_Gray(color_photos, gray_photos)
-Generate_FFT_Images(4)
-Generate_Wavelet_Images(4,20)
+#Generate_FFT_Images(4)
+#Generate_Wavelet_Images(4,20)
 #Make_Video(color_photos, color_video, color_video_name)
 #Make_Video(gray_photos, gray_video, gray_video_name)
-Make_Video(fft_photos_quantification, fft_video_quantification, fft_video_name)
-Make_Video(fft_photos_umbral, fft_video_umbral, fft_video_name)
-Make_Video(wave_photos_temp, wave_video_temp, wave_video_name)
-Make_Video(wave_photos_esp, wave_video_esp, wave_video_name)
+#Make_Video(fft_photos_quantification, fft_video_quantification, fft_video_name)
+#Make_Video(fft_photos_umbral, fft_video_umbral, fft_video_name)
+#Make_Video(wave_photos_temp, wave_video_temp, wave_video_name)
+#Make_Video(wave_photos_esp, wave_video_esp, wave_video_name)
 #print('Ejemplo1 Done !!')
 
 #***************************************************************************************************************
