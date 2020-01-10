@@ -1,148 +1,171 @@
-from ImageProcessing import *
-from Fourier import *
-from Wavelets import *
+from numpy import std
+from cv2 import imwrite
+from fourier import compress_image, decompress_image, quntification, Q, umbral
+from imageprocessing import convert_to_gray, get_numpy_array, read_images, make_video
+from imageprocessing.config import color_photos, color_video, color_video_name, \
+    fft_photos_quantification, fft_photos_umbral, fft_video_name, fft_video_quantification, \
+    fft_video_umbral, gray_photos, gray_video, gray_video_name, video_path, wave_photos_esp, \
+    wave_photos_temp, wave_video_esp, wave_video_name, wave_video_temp
+from imageprocessing.utils import mkdir, prt
+from wavelets import full_compress_wavelets, time_compression
 
-#modulo principal de la aplicación
 
-#descomentar las secciones a ejecutar (solo ejecutar un bloque a la vez)
+# Modulo principal de la Aplicación
+# Descomentar las secciones a ejecutar (solo ejecutar un bloque a la vez)
 
-def Generate_FFT_Images(qratio):
-    images = Get_Numpy_Array(gray_photos)
-    
+
+def generate_fft_images(qratio):
+    images = get_numpy_array(gray_photos)
+
     mkdir(fft_photos_umbral)
     mkdir(fft_photos_quantification)
-    
-    for i,image in enumerate(images):
+
+    for i, image in enumerate(images):
         blocks = compress_image(image)
-        blocks_quantification2 = [[quntification(block, Q, qratio) for block in row] for row in blocks]
+        blocks_quantification2 = [
+            [quntification(block, Q, qratio) for block in row]
+            for row in blocks
+        ]
         comp1 = decompress_image(blocks_quantification2)
-        std = np.std(image)
-        blocks_umbral = [[umbral(block, std) for block in row] for row in blocks]
+        _std = std(image)
+        blocks_umbral = [[umbral(block, _std) for block in row] for row in blocks]
         comp = decompress_image(blocks_umbral)
-        cv2.imwrite(fft_photos_quantification + '/frame' + str(i) + '.jpg', comp1)
-        cv2.imwrite(fft_photos_umbral + '/frame' + str(i) + '.jpg', comp)
-        prt(fft_photos_quantification,i)
-        prt(fft_photos_umbral,i)
-    
+        imwrite(fft_photos_quantification + '/frame' + str(i) + '.jpg', comp1)
+        imwrite(fft_photos_umbral + '/frame' + str(i) + '.jpg', comp)
+        prt(fft_photos_quantification, i)
+        prt(fft_photos_umbral, i)
+
     print('FFT Done!!')
 
-def Generate_FFT_Unmbral():
-    images = Get_Numpy_Array(gray_photos)
+
+def generate_fft_unmbral():
+    images = get_numpy_array(gray_photos)
     mkdir(fft_photos_umbral)
     blocks = compress_image(image)
-    std = np.std(image)
-    blocks_umbral = [[umbral(block, std) for block in row] for row in blocks]
+    _std = std(image)
+    blocks_umbral = [[umbral(block, _std) for block in row] for row in blocks]
     data = decompress_image(blocks_umbral)
-    cv2.imwrite(fft_photos_umbral + '/frame' + str(i) + '.jpg', data)
-    prt(fft_photos_umbral,i)
-    
-def Generate_FFT_Qratio(qratio):
-    images = Get_Numpy_Array(gray_photos)
+    imwrite(fft_photos_umbral + '/frame' + str(i) + '.jpg', data)
+    prt(fft_photos_umbral, i)
+
+
+def generate_fft_qratio(qratio):
+    images = get_numpy_array(gray_photos)
     blocks = compress_image(image)
     mkdir(fft_photos_quantification)
     blocks_quantification = [[quntification(block, Q, qratio) for block in row] for row in blocks]
     data = decompress_image(blocks_quantification)
-    
-    cv2.imwrite(fft_photos_quantification + '/frame' + str(i) + '.jpg', data)
-    prt(fft_photos_quantification,i)
 
-def Generate_Wavelet_Images(rows, columns):
-    Generate_Wavelet_Temp(rows,columns)
-    Generate_Wave_Esp()
-    
+    imwrite(fft_photos_quantification + '/frame' + str(i) + '.jpg', data)
+    prt(fft_photos_quantification, i)
+
+
+def generate_wavelet_images(rows, columns):
+    generate_wavelet_temp(rows, columns)
+    generate_wavelet_esp()
+
     print('Wavelets Done!!')
-    
-def Generate_Wavelet_Temp(rows, columns):
-    images = Get_Numpy_Array(gray_photos)
-    
+
+
+def generate_wavelet_temp(rows, columns):
+    images = get_numpy_array(gray_photos)
+
     result = []
-    
+
     mkdir(wave_photos_temp)
-    
-    for j in range(0,rows):
+
+    for j in range(0, rows):
         temp = []
-        for i in range(0,columns):
-            temp.append(images[j*columns + i])
-        reuslt = time_compression(temp,3000000)
-        for i in range(0,len(reuslt)):
-            result.append(full_compress_wavelets(reuslt[i]))
-    
-    for i,image in enumerate(result):
-        cv2.imwrite(wave_photos_temp + '/frame' + str(i) + '.jpg', image)     
-        prt(wave_photos_temp,i)
-        
-def Generate_Wave_Esp():
-    images = Get_Numpy_Array(gray_photos)
-    
+        for i in range(0, columns):
+            temp.append(images[j * columns + i])
+        temp_result = time_compression(temp, 3000000)
+        for item in temp_result:
+            result.append(full_compress_wavelets(item))
+
+    for i, image in enumerate(result):
+        imwrite(wave_photos_temp + '/frame' + str(i) + '.jpg', image)
+        prt(wave_photos_temp, i)
+
+
+def generate_wavelet_esp():
+    images = get_numpy_array(gray_photos)
+
     mkdir(wave_photos_esp)
-    
-    for i,image in enumerate(images):
+
+    for i, image in enumerate(images):
         comp = full_compress_wavelets(image)
-        cv2.imwrite(wave_photos_esp + '/frame' + str(i) + '.jpg', comp)
-        prt(wave_photos_esp,i)
+        imwrite(wave_photos_esp + '/frame' + str(i) + '.jpg', comp)
+        prt(wave_photos_esp, i)
 
 
-#****************************************************BLOQUE***********************************************
+# ***** BLOQUE ************************************************************************************
 
-##----------------------------------------------Preparar Video -----------------------------------
-## Esta pare del código solo necesita ser ejecutada una vez por video
-#Read_Images(color_photos, video_path)
-#Convert_To_Gray(color_photos, gray_photos)
-#Make_Video(color_photos, color_video, color_video_name)
-#Make_Video(gray_photos, gray_video, gray_video_name)
+# ----- Preparar Video --------------------------------------------------------------------------
 
-##----------------------------------------------Ejecutar FFT -------------------------------------
-## El valor proporcionado al método es un coeficiente de la matriz que sirve de filtro
-#Generate_FFT_Images(4)
-#Make_Video(fft_photos_quantification, fft_video_quantification, fft_video_name)
-#Make_Video(fft_photos_umbral, fft_video_umbral, fft_video_name) 
- 
+# Esta pare del código solo necesita ser ejecutada una vez por video.
 
-##-----------------------------------------------Ejecutar Wavelet --------------------------------
-## Para ejecutar este pedazo de código se debe tener en cuenta que de la forma que diseñamos una de las
-## compresiones de wavelet es necesario suministrarle la cantidad de filas y columnas. Esta parte del
-## algoritmo toma las n filas y las convierte en filas de m elementos que son procesados juntos
-## y luego devueltos en la misma forma. Dado que el numero de frames de un video es desconocido
-## se hace necesari suministrar estos datos a mano, para saber la cantidad de frames (fotos) presentes
-## se puede descomentar la primera parte del código y revisar cualquiera de sus carpetas generadas
+read_images(color_photos, video_path)
+convert_to_gray(color_photos, gray_photos)
+make_video(color_photos, color_video, color_video_name)
+make_video(gray_photos, gray_video, gray_video_name)
 
-#Generate_Wavelet_Images(x,x)
-#Make_Video(wave_photos_temp, wave_video_temp, wave_video_name)
-#Make_Video(wave_photos_esp, wave_video_esp, wave_video_name)
+# ----- Ejecutar FFT ----------------------------------------------------------------------------
 
-#**********************************************************************************************************
+# El valor proporcionado al método es un coeficiente de la matriz que sirve de filtro.
+
+generate_fft_images(4)
+make_video(fft_photos_quantification, fft_video_quantification, fft_video_name)
+make_video(fft_photos_umbral, fft_video_umbral, fft_video_name)
 
 
-#**************************************************BLOQUE****************************************************
+# ----- Ejecutar Wavelet ------------------------------------------------------------------------
 
-#------------------------------------------------Ejemplo1------------------------------------------------
-#Read_Images(color_photos, video_path)
-#Convert_To_Gray(color_photos, gray_photos)
-#Generate_FFT_Images(4)
-#Generate_Wavelet_Images(4,20)
-#Make_Video(color_photos, color_video, color_video_name)
-#Make_Video(gray_photos, gray_video, gray_video_name)
-#Make_Video(fft_photos_quantification, fft_video_quantification, fft_video_name)
-#Make_Video(fft_photos_umbral, fft_video_umbral, fft_video_name)
-#Make_Video(wave_photos_temp, wave_video_temp, wave_video_name)
-#Make_Video(wave_photos_esp, wave_video_esp, wave_video_name)
-#print('Ejemplo1 Done !!')
+# Para ejecutar este pedazo de código se debe tener en cuenta que de la forma que diseñamos una
+# de las compresiones de wavelet es necesario suministrarle la cantidad de filas y columnas. Esta
+# parte del algoritmo toma las n filas y las convierte en filas de m elementos que son procesados
+# juntos y luego devueltos en la misma forma. Dado que el numero de frames de un video es
+# desconocido se hace necesario suministrar estos datos a mano, para saber la cantidad de frames
+# (fotos) presentes se puede descomentar la primera parte del código y revisar cualquiera de sus
+# carpetas generadas.
 
-#***************************************************************************************************************
+generate_wavelet_images(x, x)
+make_video(wave_photos_temp, wave_video_temp, wave_video_name)
+make_video(wave_photos_esp, wave_video_esp, wave_video_name)
 
-#****************************************************BLOQUE****************************************************
+# *************************************************************************************************
 
-##------------------------------------------------Ejemplo2------------------------------------------------
-#Read_Images(color_photos, video_path)
-#Convert_To_Gray(color_photos, gray_photos)
-#Generate_FFT_Images(4)
-#Generate_Wavelet_Images(16,73)
-#Make_Video(color_photos, color_video, color_video_name)
-#Make_Video(gray_photos, gray_video, gray_video_name)
-#Make_Video(fft_photos_quantification, fft_video_quantification, fft_video_name)
-#Make_Video(fft_photos_umbral, fft_video_umbral, fft_video_name)
-#Make_Video(wave_photos_temp, wave_video_temp, wave_video_name)
-#Make_Video(wave_photos_esp, wave_video_esp, wave_video_name)
-#print('Ejemplo2 Done !!')
+# ***** BLOQUE ************************************************************************************
 
-#*****************************************************************************************************************
+# ----- Ejemplo 1 -------------------------------------------------------------------------------
+
+read_images(color_photos, video_path)
+convert_to_gray(color_photos, gray_photos)
+generate_fft_images(4)
+generate_wavelet_images(4, 20)
+make_video(color_photos, color_video, color_video_name)
+make_video(gray_photos, gray_video, gray_video_name)
+make_video(fft_photos_quantification, fft_video_quantification, fft_video_name)
+make_video(fft_photos_umbral, fft_video_umbral, fft_video_name)
+make_video(wave_photos_temp, wave_video_temp, wave_video_name)
+make_video(wave_photos_esp, wave_video_esp, wave_video_name)
+print('Ejemplo 1 Done !!')
+
+# *************************************************************************************************
+
+# ***** BLOQUE ************************************************************************************
+
+# ----- Ejemplo 2 -------------------------------------------------------------------------------
+
+read_images(color_photos, video_path)
+convert_to_gray(color_photos, gray_photos)
+generate_fft_images(4)
+generate_wavelet_images(16, 73)
+make_video(color_photos, color_video, color_video_name)
+make_video(gray_photos, gray_video, gray_video_name)
+make_video(fft_photos_quantification, fft_video_quantification, fft_video_name)
+make_video(fft_photos_umbral, fft_video_umbral, fft_video_name)
+make_video(wave_photos_temp, wave_video_temp, wave_video_name)
+make_video(wave_photos_esp, wave_video_esp, wave_video_name)
+print('Ejemplo 2 Done !!')
+
+# *************************************************************************************************
